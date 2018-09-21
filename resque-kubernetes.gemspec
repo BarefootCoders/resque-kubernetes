@@ -31,5 +31,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rubocop", "~> 0.52", ">= 0.52.1"
 
   spec.add_dependency "kubeclient", ">= 2.2", "< 4.0"
-  spec.add_dependency "resque", "~> 1.26"
+  spec.add_dependency "resque", "~> 1.25"
 end
