@@ -83,7 +83,9 @@ module Resque
 
       # A before_enqueue hook that adds worker jobs to the cluster.
       def before_enqueue_kubernetes_job(*_)
-        if defined? Rails
+        if defined?(settings)
+          return unless Resque::Kubernetes.environments.include?(settings.environment.to_s)
+        elsif defined?(Rails)
           return unless Resque::Kubernetes.environments.include?(Rails.env)
         end
 
