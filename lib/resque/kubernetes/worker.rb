@@ -26,7 +26,7 @@ module Resque
         def shutdown?
           if ENV["TERM_ON_EMPTY"]
             if queues_empty?
-              log_with_severity :info, "shutdown: queues are empty"
+              Resque.logger.info "shutdown: queues are empty"
               shutdown
             end
           end

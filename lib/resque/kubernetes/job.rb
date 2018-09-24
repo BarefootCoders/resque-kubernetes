@@ -77,40 +77,46 @@ module Resque
     #     end
     module Job
       def self.included(base)
-        return unless base.respond_to?(:before_enqueue)
-        base.before_enqueue :before_enqueue_kubernetes_job
+        base.class_eval do
+          base.send(:extend, Resque::Kubernetes::Job::Hooks)
+          base.send(:extend, Resque::Kubernetes::Job::Helpers)
+        end
       end
 
-      # A before_enqueue hook that adds worker jobs to the cluster.
-      def before_enqueue_kubernetes_job(*_)
-        # TODO only do this in production
-        manager = JobsManager.new(self)
-        manager.reap_finished_jobs
-        manager.apply_kubernetes_job
+      module Hooks
+        # A before_enqueue hook that adds worker jobs to the cluster.
+        def before_enqueue_kubernetes_job(*_)
+          # TODO only do this in production
+          manager = JobsManager.new(self)
+          manager.reap_finished_jobs
+          manager.apply_kubernetes_job
+        end
       end
 
-      # The maximum number of workers to autoscale the job to.
-      #
-      # While the number of active Kubernetes Jobs is less than this number,
-      # the gem will add new Jobs to auto-scale the workers.
-      #
-      # By default, this returns `Resque::Kubernetes.max_workers` from the gem
-      # configuration. You may override this method to return any other value,
-      # either as a simple integer or with some complex logic.
-      #
-      # Example:
-      #    def max_workers
-      #      # A simple integer
-      #      105
-      #    end
-      #
-      # Example:
-      #    def max_workers
-      #      # Scale based on time of day
-      #      Time.now.hour < 8 ? 15 : 5
-      #    end
-      def max_workers
-        Resque::Kubernetes.max_workers
+      module Helpers
+        # The maximum number of workers to autoscale the job to.
+        #
+        # While the number of active Kubernetes Jobs is less than this number,
+        # the gem will add new Jobs to auto-scale the workers.
+        #
+        # By default, this returns `Resque::Kubernetes.max_workers` from the gem
+        # configuration. You may override this method to return any other value,
+        # either as a simple integer or with some complex logic.
+        #
+        # Example:
+        #    def max_workers
+        #      # A simple integer
+        #      105
+        #    end
+        #
+        # Example:
+        #    def max_workers
+        #      # Scale based on time of day
+        #      Time.now.hour < 8 ? 15 : 5
+        #    end
+        def max_workers
+          Resque::Kubernetes.max_workers
+        end
       end
     end
   end
