@@ -21,17 +21,10 @@ module Resque
         end
       end
 
-      attr_accessor :term_on_empty
-
       # Replace methods on the worker instance
       module InstanceMethods
-        def prepare
-          self.term_on_empty = ENV["TERM_ON_EMPTY"] if ENV["TERM_ON_EMPTY"]
-          super
-        end
-
         def shutdown?
-          if term_on_empty
+          if ENV["TERM_ON_EMPTY"]
             if queues_empty?
               log_with_severity :info, "shutdown: queues are empty"
               shutdown
